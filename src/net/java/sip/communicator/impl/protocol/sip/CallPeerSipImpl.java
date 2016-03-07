@@ -1313,11 +1313,35 @@ public class CallPeerSipImpl
                 sdpOffer = SdpUtils.getContentAsString(invite);
             }
 
-            String sdp;
+            String sdp = "";
             // if the offer was in the invite create an SDP answer
             if ((sdpOffer != null) && (sdpOffer.length() > 0))
             {
-                sdp = getMediaHandler().processOffer(sdpOffer);
+                /*
+                * MULTIPART FIX: By Iñigo Ruiz on 04/03/2016 NQaS
+                * */
+                javax.sip.message.Message myMsg = (javax.sip.message.Message)invite;
+                String cont_type = myMsg.getHeader("Content-Type").toString();
+
+                if (cont_type.contains("multipart/mixed"))
+                {
+                    String boundary = cont_type.substring(cont_type.indexOf("boundary=")+9);
+                    String[] sdps = sdpOffer.split("--"+boundary);
+
+                    for (String msdp : sdps)
+                    {
+                        //System.out.println(sdp);
+                        if (msdp.contains("Content-Type: application/sdp"))
+                        {
+                            //System.out.println(sdp);
+
+                            sdp = getMediaHandler().processOffer(msdp);
+                        }
+                    }
+                }else
+                {
+                    sdp = getMediaHandler().processOffer(sdpOffer);
+                }
             }
             // if there was no offer in the invite - create an offer
             else

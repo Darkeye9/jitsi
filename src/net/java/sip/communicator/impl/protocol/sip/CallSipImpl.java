@@ -271,8 +271,35 @@ public class CallSipImpl
                 if(inviteReq != null && inviteReq.getRawContent() != null)
                 {
                     String sdpStr = SdpUtils.getContentAsString(inviteReq);
-                    SessionDescription sesDescr
-                        = SdpUtils.parseSdpString(sdpStr);
+
+                    /*
+                    * MULTIPART FIX: By Iñigo Ruiz on 04/03/2016 NQaS
+                    * */
+                    javax.sip.message.Message myMsg = (javax.sip.message.Message)inviteReq;
+                    String cont_type = myMsg.getHeader("Content-Type").toString();
+
+                    SessionDescription sesDescr = null;
+                    if (cont_type.contains("multipart/mixed"))
+                    {
+                        String boundary = cont_type.substring(cont_type.indexOf("boundary=")+9);
+                        String[] sdps = sdpStr.split("--"+boundary);
+
+                        for (String sdp : sdps)
+                        {
+                            //System.out.println(sdp);
+                            if (sdp.contains("Content-Type: application/sdp"))
+                            {
+                                //System.out.println(sdp);
+
+                                sesDescr = SdpUtils.parseSdpString(sdp);
+                            }
+                        }
+                    }else
+                    {
+                        sesDescr = SdpUtils.parseSdpString(sdpStr);
+                    }
+
+
                     List<MediaDescription> remoteDescriptions
                         = SdpUtils.extractMediaDescriptions(sesDescr);
 
