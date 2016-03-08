@@ -102,6 +102,8 @@ public abstract class MediaAwareCallPeer
      */
     private String peerID;
 
+    private String geoPosition;
+
     /**
      * The protocol provider that this peer belongs to.
      */
@@ -1257,5 +1259,13 @@ public abstract class MediaAwareCallPeer
         default:
             throw new IllegalArgumentException("mediaType");
         }
+    }
+
+    public String getGeoPosition() {
+        return geoPosition;
+    }
+
+    public void setGeoPosition(String geoPosition) {
+        this.geoPosition = geoPosition;
     }
 }

@@ -23,6 +23,8 @@ import gov.nist.javax.sip.header.*;
 import java.net.*;
 import java.text.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.sip.*;
 import javax.sip.address.*;
@@ -1337,6 +1339,16 @@ public class CallPeerSipImpl
 
                             sdp = getMediaHandler().processOffer(msdp);
                         }
+                        if (msdp.contains("Content-Type: application/pidf+xml"))
+                        {
+                            Pattern pat = Pattern.compile("<gml:pos>(.*)</gml:pos>");
+                            Matcher matcher = pat.matcher(msdp);
+
+                            if (matcher.find())
+                            {
+                                setGeoPosition(matcher.group(1));
+                            }
+                        }
                     }
                 }else
                 {
@@ -1751,4 +1763,5 @@ public class CallPeerSipImpl
 
         return MediaDirection.INACTIVE;
     }
+
 }

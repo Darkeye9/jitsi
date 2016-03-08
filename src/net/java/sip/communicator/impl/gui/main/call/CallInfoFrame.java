@@ -277,6 +277,8 @@ public class CallInfoFrame
             }
 
             constructCallPeersInfo(stringBuffer);
+            constructPresenceInfo(stringBuffer);
+
 
             stringBuffer.append("</font></p></body></html>");
 
@@ -285,6 +287,24 @@ public class CallInfoFrame
             infoTextPane.repaint();
 
             return true;
+        }
+    }
+
+    /**
+     * Constructs call peers' presence location info.
+     *
+     * @param stringBuffer the <tt>StringBuffer</tt>, where call peer info will
+     * be added
+     */
+    private void constructPresenceInfo (StringBuffer sb)
+    {
+        sb.append("<h3>Peer's Emergency Info</h3><br/>");
+        for (CallPeer callPeer : callConference.getCallPeers())
+        {
+            String coords = ((MediaAwareCallPeer) callPeer).getGeoPosition();
+            sb.append("<b>Peer "+callPeer.getURI()+":</b><br/>" +
+                    "<a href=\"http://maps.google.com/maps?q=loc:"+coords.replace(" ",",")+
+                    "\">"+coords+"</a><br/>");
         }
     }
 
@@ -853,8 +873,17 @@ public class CallInfoFrame
      */
     public void hyperlinkUpdate(HyperlinkEvent e)
     {
+        if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+            Desktop desktop = Desktop.getDesktop();
+            try {
+                desktop.browse(e.getURL().toURI());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
         // Handle "View certificate" link
-        if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED
+        else if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED
                         && CERTIFICATE_URL.equals(e.getDescription()))
         {
             List<Call> calls = callConference.getCalls();
